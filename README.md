@@ -13,6 +13,7 @@ git clone https://github.com/hanmol0312/leader_follower_project.git
 ```
 cd ..
 colcon build
+source install/setup.bash
 ```
 
 ## 3. Launch the simulation
