@@ -65,7 +65,7 @@ class FollowerBot(Node):
         angle_diff = (angle_diff + math.pi) % (2 * math.pi) - math.pi
 
         cmd = Twist()
-        print(angle_diff)
+        # print(angle_diff)
         if abs(angle_diff) > self.orientation_tolerance:
             cmd.angular.z = 0.5 * angle_diff
         elif distance > self.safe_distance:

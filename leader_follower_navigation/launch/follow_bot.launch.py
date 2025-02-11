@@ -60,4 +60,10 @@ def generate_launch_description():
             arguments=[follower_urdf],
             name="robot_state_publisher_2"
         ),
+        Node(
+            package="leader_follower_navigation",
+            executable="follower_node",
+            output="screen",
+            name="follower_node"
+        ),
     ])
