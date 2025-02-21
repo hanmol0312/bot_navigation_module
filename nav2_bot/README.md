@@ -60,6 +60,7 @@ waypoints:  wp1: {x: 4.76, y: 0.0, yaw: 0.0}  wp2: {x: 6.73, y: -2.15, yaw: 0.0}
 ## 7. Challenges
 
 - The lidar data is distorting inspite of reduced velocities causing the localization to have an effective error.
+- Have solved to an extent with rotation shim controller and the navigation in compact places is also possible.
 
 ## 8. Conclusion
 
