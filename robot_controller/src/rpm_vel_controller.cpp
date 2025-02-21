@@ -6,9 +6,9 @@ class RPMController : public rclcpp::Node {
 public:
     RPMController() : Node("rpm_controller") {
         // Declare and get parameters
-        this->declare_parameter("wheelbase", 0.2);
-        this->declare_parameter("wheel_radius", 0.05);
-        this->declare_parameter("max_rpm", 100.0);
+        this->declare_parameter("wheelbase", 0.19);
+        this->declare_parameter("wheel_radius", 0.09);
+        this->declare_parameter("max_rpm", 40.0);
 
         wheelbase_ = this->get_parameter("wheelbase").as_double();
         wheel_radius_ = this->get_parameter("wheel_radius").as_double();

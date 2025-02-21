@@ -27,17 +27,23 @@ ament_target_dependencies(rpm_vel_controller rclcpp  nav2_msgs gazebo geometry_m
 
 
 install(DIRECTORY urdf
-DESTINATION share/
+DESTINATION share/${PROJECT_NAME}
+)
+install(DIRECTORY launch
+DESTINATION share/${PROJECT_NAME}
 )
 
-install(DIRECTORY launch
-DESTINATION share/
-)
 
 
 add_library(gazebo_rpm_plugin SHARED src/gazebo_rpm_plugin.cpp)
 ament_target_dependencies(gazebo_rpm_plugin rclcpp std_msgs gazebo_ros)
 install(TARGETS gazebo_rpm_plugin DESTINATION lib)
+
+
+install(TARGETS
+rpm_vel_controller
+DESTINATION lib/${PROJECT_NAME})
+
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
