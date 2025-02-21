@@ -143,8 +143,8 @@ controller_server:
       primary_controller: "dwb_core::DWBLocalPlanner"
       angular_dist_threshold: 0.785
       forward_sampling_distance: 0.5
-      rotate_to_heading_angular_vel: 1.8
-      max_angular_accel: 3.2
+      rotate_to_heading_angular_vel: 1.0
+      max_angular_accel: 1.0
       simulate_ahead_time: 1.0
       rotate_to_goal_heading: false
       debug_trajectory_details: True
@@ -152,7 +152,7 @@ controller_server:
       min_vel_y: 0.0
       max_vel_x: 0.26
       max_vel_y: 0.0
-      max_vel_theta: 3.0 #changed value
+      max_vel_theta: 1.0 #changed value
       min_speed_xy: 0.0
       max_speed_xy: 0.26
       min_speed_theta: 0.0
