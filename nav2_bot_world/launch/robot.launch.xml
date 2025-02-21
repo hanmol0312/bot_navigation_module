@@ -1,0 +1,26 @@
+
+<launch>
+    <let name="urdf_path" value="$(find-pkg-share nav2_bot_world)/urdf/robot.urdf.xacro"/>
+    <let name="rviz_path" value="$(find-pkg-share nav2_bot_world)/rviz/bot_config.rviz"/>
+    <let name="world_path" value="$(find-pkg-share nav2_bot_world)/worlds/nav2_world.world"/>
+    <let name="params_path" value="$(find-pkg-share nav2_bot)/params/nav2_params.yaml"/>
+    <let name="map_path" value="$(find-pkg-share nav2_bot_world)/maps/my_map.yaml"/>
+
+    <node pkg="robot_state_publisher" exec="robot_state_publisher">
+        <param name="robot_description" value="$(command 'xacro $(var urdf_path)')" />
+    </node>
+
+    <include file="$(find-pkg-share gazebo_ros)/launch/gazebo.launch.py">
+        <arg name="world" value="$(var world_path)" />
+    </include>
+
+    <node pkg="rviz2" exec="rviz2" output="screen" args="-d $(var rviz_path)"/>
+
+    <node pkg="gazebo_ros" exec="spawn_entity.py" args=" -topic robot_description -entity bot"/>
+
+    <include file="$(find-pkg-share nav2_bringup)/launch/bringup_launch.py">
+        <arg name="use_sim_time" value="True"/>
+        <arg name="params_file" value="$(var params_path)"/>
+        <arg name="map" value="$(var map_path)"/>
+    </include>
+</launch>
