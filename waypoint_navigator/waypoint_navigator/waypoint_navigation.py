@@ -3,7 +3,8 @@ from rclpy.node import Node
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 import math
-
+from tf_transformations import euler_from_quaternion
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 class PIDController:
     def __init__(self, kp, ki, kd):
         self.kp = kp
@@ -28,8 +29,8 @@ class WaypointNavigator(Node):
         self.declare_parameter('waypoint_2_x', 2.0)
         self.declare_parameter('waypoint_2_y', 2.0)
         self.declare_parameter('kp', 1.0)
-        self.declare_parameter('ki', 0.0)
-        self.declare_parameter('kd', 0.0)
+        self.declare_parameter('ki', 0.01)
+        self.declare_parameter('kd', 0.01)
         
         self.waypoints = [
             (self.get_parameter('waypoint_1_x').value, self.get_parameter('waypoint_1_y').value),
@@ -37,14 +38,14 @@ class WaypointNavigator(Node):
         ]
         self.current_waypoint_idx = 0
         self.reached_goal = False
-        
+        self.odom_callback_group = MutuallyExclusiveCallbackGroup()
         kp = self.get_parameter('kp').value
         ki = self.get_parameter('ki').value
         kd = self.get_parameter('kd').value
         self.pid_linear = PIDController(kp, ki, kd)
         self.pid_angular = PIDController(kp, ki, kd)
         
-        self.odom_sub = self.create_subscription(Odometry, '/odom', self.odom_callback, 10)
+        self.odom_sub = self.create_subscription(Odometry, '/odom', self.odom_callback, 10,callback_group=self.odom_callback_group)
         self.cmd_vel_pub = self.create_publisher(Twist, '/cmd_vel', 10)
         self.timer = self.create_timer(0.1, self.control_loop)
         
@@ -56,13 +57,8 @@ class WaypointNavigator(Node):
     def odom_callback(self, msg):
         self.x = msg.pose.pose.position.x
         self.y = msg.pose.pose.position.y
-        _, _, self.yaw = self.euler_from_quaternion(msg.pose.pose.orientation)
+        _, _, self.yaw = euler_from_quaternion([msg.pose.pose.orientation.x,msg.pose.pose.orientation.y,msg.pose.pose.orientation.z,msg.pose.pose.orientation.w])
     
-    def euler_from_quaternion(self, q):
-        t3 = 2.0 * (q.w * q.z + q.x * q.y)
-        t4 = 1.0 - 2.0 * (q.y * q.y + q.z * q.z)
-        yaw = math.atan2(t3, t4)
-        return (0.0, 0.0, yaw)
     
     def control_loop(self):
         if self.current_waypoint_idx >= len(self.waypoints):
@@ -73,6 +69,7 @@ class WaypointNavigator(Node):
         distance = math.sqrt((wp_x - self.x)**2 + (wp_y - self.y)**2)
         angle_to_target = math.atan2(wp_y - self.y, wp_x - self.x)
         angle_error = angle_to_target - self.yaw
+        angle_error = (angle_error + math.pi) % (2 * math.pi) - math.pi
         
         now = self.get_clock().now()
         dt = (now - self.last_time).nanoseconds / 1e9
@@ -80,16 +77,19 @@ class WaypointNavigator(Node):
 
         if distance < 0.1:
             self.current_waypoint_idx += 1
+            print("Reached 1")
+            
             if self.current_waypoint_idx >= len(self.waypoints):
                 self.reached_goal = True
             return
         
+        
         linear_velocity = self.pid_linear.compute(distance, dt)
         angular_velocity = self.pid_angular.compute(angle_error, dt)
-        
+        print(f"angle_error:{angle_error}, yaw:{self.yaw}, angle_target:{angle_to_target}")
         twist = Twist()
-        twist.linear.x = min(0.5, max(-0.5, linear_velocity))
-        twist.angular.z = min(1.0, max(-1.0, angular_velocity))
+        twist.linear.x = min(0.3, max(-0.5, linear_velocity))
+        twist.angular.z = min(0.8, max(-0.5, angular_velocity))
         self.cmd_vel_pub.publish(twist)
     
     def stop_robot(self):
